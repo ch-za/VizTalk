@@ -1,0 +1,8 @@
+{
+  "name": "VizTalk",
+  "version": "1.0.0",
+  "description": "Talk to your Viz",
+  "main": "viztalk.js",
+  "author": "Christopher Zajac",
+  "license": "MIT"
+}
