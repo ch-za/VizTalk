@@ -34,9 +34,9 @@ var viz, workbook, activeSheet, publishedSheets;
                         ignoreAliases: false,
                         ignoreSelection: true
                     };
-                    activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
-                    activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
-                    getFilters(activeSheet);
+                    //activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
+                    //activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
+                    //getFilters(activeSheet);
                     //activeSheet.clearFilterAsync("Region").then(console.log("Cleared region filter"));
                     buildSelectFilterCountryCmd();
                     buildSelectFilterRegionCmd();
@@ -51,17 +51,19 @@ var viz, workbook, activeSheet, publishedSheets;
         function annyangInit() {
             var cmds = {
                 'hello': function() { alert('Hello Vizmaster!'); },
-                'activate (sheet) *name': activate,
+                'activate (sheet) *name': activateSheet,
                 'clear selection': clearSelection,
                 'clear filter :filter': clearFilter,
                 ':type filter by Year :year': yearFilter,
+                'apply range filter to GDP between :min and :max': applyGDPRangeFilter,
                 'reset workbook': resetWkbk,
                 'disable': stopAnnyang
             };
             var cmdKeys = Object.keys(cmds);
             var cmdString = cmdKeys.join(" | ");
             annyang.addCommands(cmds);
-            $("#cmdTarget").append("<h2 id='available'>Available commands:</h2><p>" + cmdString + "</p>");
+            $("#cmdTarget").append("<h2 id='available'>Available commands:</h2>" +
+                "<p>" + cmdString + "</p><p>Use '-1' in range filter for no min/max.<br>Use '-1' for both for clearing range filter.</p>");
         }
 
         /**
@@ -100,7 +102,7 @@ var viz, workbook, activeSheet, publishedSheets;
          * Check if called sheet is within the workbook and adapt to case-sensitivity.
          * @param name - name of the worksheet to be activated
          */
-        function activate(name) {
+        function activateSheet(name) {
             var sheetHelp;
             for (var i = 0; i < publishedSheets.length; i++) {
                 sheetHelp = publishedSheets[i].getName();
@@ -137,8 +139,8 @@ var viz, workbook, activeSheet, publishedSheets;
         }
 
         /**
-         *
-         * @param year -
+         * Filter worksheet by year.
+         * @param year - specific year for filter
          */
         function yearFilter(type, year) {
             var uppercase = type.toUpperCase();
@@ -167,6 +169,40 @@ var viz, workbook, activeSheet, publishedSheets;
                         "",
                         tableau.FilterUpdateType.ALL);
                     break;
+            }
+        }
+
+        /**
+         * Range filter data by GDP value.
+         * @param min - minimum value
+         * @param max - maximum value
+         */
+        function applyGDPRangeFilter(min, max) {
+            if(min === "-1" && max === "-1") {
+                activeSheet.clearFilterAsync("F: GDP per capita (curr $)");
+                return;
+            } else if(max === "-1") {
+                activeSheet.applyRangeFilterAsync(
+                    "F: GDP per capita (curr $)",
+                    {
+                        min: min
+                    },
+                    tableau.FilterUpdateType.REPLACE);
+            } else if(min === "-1") {
+                activeSheet.applyRangeFilterAsync(
+                    "F: GDP per capita (curr $)",
+                    {
+                        max: max
+                    },
+                    tableau.FilterUpdateType.REPLACE);
+            } else {
+                activeSheet.applyRangeFilterAsync(
+                    "F: GDP per capita (curr $)",
+                    {
+                        min: min,
+                        max: max
+                    },
+                    tableau.FilterUpdateType.REPLACE);
             }
         }
 
