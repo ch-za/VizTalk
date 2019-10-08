@@ -34,10 +34,10 @@ var viz, workbook, activeSheet, publishedSheets;
                         ignoreAliases: false,
                         ignoreSelection: true
                     };
-                    //activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
-                    //activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
-                    //getFilters(activeSheet);
-                    //activeSheet.clearFilterAsync("Region").then(console.log("Cleared region filter"));
+                    activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
+                    activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
+                    getFilters(activeSheet);
+                    /*//activeSheet.clearFilterAsync("Region").then(console.log("Cleared region filter"));*/
                     buildSelectFilterCountryCmd();
                     buildSelectFilterRegionCmd();
                 }
@@ -51,6 +51,7 @@ var viz, workbook, activeSheet, publishedSheets;
         function annyangInit() {
             var cmds = {
                 'hello': function() { alert('Hello Vizmaster!'); },
+                'test *multiple words': function() { alert('Multiple!'); },
                 'activate (sheet) *name': activateSheet,
                 'clear selection': clearSelection,
                 'clear filter :filter': clearFilter,
@@ -85,14 +86,11 @@ var viz, workbook, activeSheet, publishedSheets;
         }
 
         function getFilters(sheet) {
-            console.log("GETFILTERS exec 1");
             sheet.getFiltersAsync().then(function(filters) {
-                console.log("GETFILTERS exec 2");
                 // Iterate through the filters retrieving properties
                 for (filter of filters) {
                     console.log(filter.getFieldName());
                     console.log(filter.getFilterType());
-                    //console.log(filter.getFilterType());
                 }
             });
         }
@@ -108,8 +106,9 @@ var viz, workbook, activeSheet, publishedSheets;
                 sheetHelp = publishedSheets[i].getName();
                 if (sheetHelp.toLowerCase() === name.toLowerCase()) {
                     if (workbook) {
-                        workbook.activateSheetAsync(sheetHelp).then(function (d) {
+                        workbook.activateSheetAsync(sheetHelp).then(function () {
                             activeSheet = workbook.getActiveSheet();
+                            console.log(activeSheet);
                         });
                         break;
                     }
@@ -125,7 +124,8 @@ var viz, workbook, activeSheet, publishedSheets;
         }
 
         /**
-         * Clear all selections done on the worksheet
+         * Clear specific filter done on the worksheet
+         * @param filter - filter to be cleared
          */
         function clearFilter(filter) {
             activeSheet.clearFilterAsync(filter);
@@ -140,6 +140,7 @@ var viz, workbook, activeSheet, publishedSheets;
 
         /**
          * Filter worksheet by year.
+         * @param type - type of filter to be used
          * @param year - specific year for filter
          */
         function yearFilter(type, year) {
@@ -180,7 +181,6 @@ var viz, workbook, activeSheet, publishedSheets;
         function applyGDPRangeFilter(min, max) {
             if(min === "-1" && max === "-1") {
                 activeSheet.clearFilterAsync("F: GDP per capita (curr $)");
-                return;
             } else if(max === "-1") {
                 activeSheet.applyRangeFilterAsync(
                     "F: GDP per capita (curr $)",
@@ -207,7 +207,7 @@ var viz, workbook, activeSheet, publishedSheets;
         }
 
         /**
-         * Build annyang command for selecting certain countries
+         * Build annyang command for selecting/filtering certain countries
          */
         function buildSelectFilterCountryCmd() {
             var columnIndex = 0;
@@ -366,7 +366,7 @@ var viz, workbook, activeSheet, publishedSheets;
         }
 
         /**
-         * Build annyang command for selecting certain region
+         * Build annyang command for selecting/filtering certain region
          */
         function buildSelectFilterRegionCmd() {
             var columnIndex = 2;
@@ -521,6 +521,10 @@ var viz, workbook, activeSheet, publishedSheets;
                     match,
                     tableau.FilterUpdateType.REMOVE);
             }
+        }
+
+        function retrieveValue() {
+
         }
 
         /**

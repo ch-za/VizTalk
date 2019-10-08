@@ -2,23 +2,24 @@
 <html lang="en">
 <head>
     <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="stylesheet" type="text/css" href="lib/node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="css/style.css">
     <meta charset="UTF-8">
     <title>VizTalk - Talk with your Tableau Viz</title>
 </head>
 <body>
     <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
-    <script type="text/javascript" src="lib/node_modules/jquery/dist/jquery.min.js"></script>
-    <script type="text/javascript" src="lib/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/annyang/2.6.1/annyang.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/3.4.5/fuse.min.js"></script>
     <script type="text/javascript" src="js/viztalk.js"></script>
     <script type="text/javascript" src="js/voicecontrol.js"></script>
 
     <div id="maincontainer" class="container-fluid">
         <div class="row justify-content-md-center">
             <div id="logoimg" class="col-xs-4">
-                <img src="logo.png" width="300px" style="margin:0 20px;">
+                <img src="logo.png" alt="VizTalk Logo" width="300px" style="margin:0 20px;">
             </div>
             <div class="col-xs-8 text-center">
                 <div id="maindiv">
@@ -36,7 +37,7 @@
             </div>
         </div>
     </div>
-    <div id="vizcontainer" style="width:100%; height:80vh;"></div>
+    <div id="vizcontainer" style="width:100%; height:1000px;"></div>
     <div id="cmdTarget" class="col-xs-1 text-center"></div>
 </body>
 </html>

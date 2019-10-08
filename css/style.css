@@ -12,14 +12,14 @@ h1 {
 }
 
 #logoimg {
-    margin:20px;
+    margin: 20px;
     border-right: #343a40 1px solid;
 }
 
 #maindiv {
-    margin:20px;
+    margin: 20px;
 }
 
 #resulttext, #cmdTarget {
-    margin:20px 50px;
+    margin: 20px 50px;
 }
