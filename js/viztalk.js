@@ -1,10 +1,17 @@
-var viz, workbook, activeSheet, publishedSheets;
-
 /**
  * use function scope for stability
  */
 (function() {
+    var viz, workbook, activeSheet, publishedSheets;
 
+    var fuseoptions = {
+        shouldSort: true,
+        threshold: 0.6,
+        location: 0,
+        distance: 100,
+        maxPatternLength: 32,
+        minMatchCharLength: 1,
+    };
     /**
      * wait for HTML document to be loaded completely before executing the JS content
      */
@@ -40,6 +47,7 @@ var viz, workbook, activeSheet, publishedSheets;
                     /*//activeSheet.clearFilterAsync("Region").then(console.log("Cleared region filter"));*/
                     buildSelectFilterCountryCmd();
                     buildSelectFilterRegionCmd();
+                    buildFuzzySelect();
                 }
             };
             viz = new tableau.Viz(container, url, options);
@@ -51,14 +59,13 @@ var viz, workbook, activeSheet, publishedSheets;
         function annyangInit() {
             var cmds = {
                 'hello': function() { alert('Hello Vizmaster!'); },
-                'test *multiple words': function() { alert('Multiple!'); },
                 'activate (sheet) *name': activateSheet,
                 'clear selection': clearSelection,
                 'clear filter :filter': clearFilter,
                 ':type filter by Year :year': yearFilter,
-                'apply range filter to GDP between :min and :max': applyGDPRangeFilter,
                 'reset workbook': resetWkbk,
-                'disable': stopAnnyang
+                'disable': stopAnnyang,
+                'apply range filter to GDP between :min and :max': applyGDPRangeFilter
             };
             var cmdKeys = Object.keys(cmds);
             var cmdString = cmdKeys.join(" | ");
@@ -572,6 +579,76 @@ var viz, workbook, activeSheet, publishedSheets;
             // delete last | from loop
             altRegex = altRegex.substring(0, altRegex.length - 1);
             return altRegex;
+        }
+
+        /**
+         * Build beta select function.
+         * Selecting marks by matching with string similarity (provided by fuse.js) of input command.
+         */
+        function buildFuzzySelect() {
+            var data, columns;
+            var columnprops = [];
+            var columnnames = [];
+
+            var options = {
+                maxRows: 0,
+                ignoreAliases: false,
+                ignoreSelection: true
+            };
+            activeSheet.getUnderlyingDataAsync(options).then(function (d) {
+                data = d;
+                columns = data.getColumns();
+                columns.forEach(function(item, index, array) {
+                    var singlecolumn = {
+                        index: item.getIndex(),
+                        name: item.getFieldName()
+                    };
+                    columnprops.push(singlecolumn);
+                    columnnames.push(item.getFieldName());
+                });
+                var cmds = {
+                    'test *multiple words': function() { alert('Multiple!'); },
+                    'fuzzy select *mark of column *column': fuzzySelect
+                };
+                var cmdKeys = Object.keys(cmds);
+                var cmdString = cmdKeys.join(" | ");
+                annyang.addCommands(cmds);
+                $("#cmdTarget").append("<h2 id='available'>Beta Command String Similarity:</h2>" +
+                    "<p>Suitable for Country & Region</p><p>" + cmdString + "</p>");
+            })
+
+            /**
+             * Actual select function executed on voice command match.
+             * Selecting marks by matching with string similarity (provided by fuse.js) of input command.
+             * @param {String} mark - desired mark from fetched voice input
+             * @param {String} column - desired column from fetched voice input
+             */
+            function fuzzySelect(mark, column) {
+                var columnindex;
+                var marks = [];
+                var fusecolumns = new Fuse(columnnames, fuseoptions);
+                var fuzzycolumnresult = fusecolumns.search(column);
+                var columnmatch = columnnames[fuzzycolumnresult[0]];
+                for (let item of columnprops) {
+                    if (item.name === columnnames[fuzzycolumnresult[0]]) {
+                        columnindex = item.index;
+                        break;
+                    }
+                }
+                var rowData = data.getData();
+                for (var i = 0; i < rowData.length; i++) {
+                    var dataelement = rowData[i];
+                    var help = dataelement[columnindex].formattedValue.toString();
+                    marks.push(help);
+                }
+                var fusemarks = new Fuse(marks, fuseoptions);
+                var fuzzymarkresult = fusemarks.search(mark);
+                var markmatch = marks[fuzzymarkresult[0]];
+                activeSheet.selectMarksAsync(
+                    columnmatch,
+                    markmatch,
+                    tableau.FilterUpdateType.REPLACE);
+            }
         }
     });
 })();
