@@ -43,8 +43,7 @@
                     };
                     //activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
                     //activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
-                    getFilters(activeSheet);
-                    /*//activeSheet.clearFilterAsync("Region").then(console.log("Cleared region filter"));*/
+                    //getFilters(activeSheet);
                     buildSelectFilterCountryCmd();
                     buildSelectFilterRegionCmd();
                     buildFuzzyCmds();
