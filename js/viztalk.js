@@ -41,13 +41,13 @@
                         ignoreAliases: false,
                         ignoreSelection: true
                     };
-                    activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
-                    activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
+                    //activeSheet.getUnderlyingDataAsync(options).then(function(d) {dataFunc(d)});
+                    //activeSheet.getSummaryDataAsync(options).then(function(t) {sumFunc(t)});
                     getFilters(activeSheet);
                     /*//activeSheet.clearFilterAsync("Region").then(console.log("Cleared region filter"));*/
                     buildSelectFilterCountryCmd();
                     buildSelectFilterRegionCmd();
-                    buildFuzzySelect();
+                    buildFuzzyCmds();
                 }
             };
             viz = new tableau.Viz(container, url, options);
@@ -68,7 +68,7 @@
                 'apply range filter to GDP between :min and :max': applyGDPRangeFilter
             };
             var cmdKeys = Object.keys(cmds);
-            var cmdString = cmdKeys.join(" | ");
+            var cmdString = cmdKeys.join("<br>");
             annyang.addCommands(cmds);
             $("#cmdTarget").append("<h2 id='available'>Available commands:</h2>" +
                 "<p>" + cmdString + "</p><p>Use '-1' in range filter for no min/max.<br>Use '-1' for both for clearing range filter.</p>");
@@ -280,7 +280,7 @@
                     }
                 };
                 var cmdKeys = Object.keys(cmd);
-                var cmdString = cmdKeys.join(" | ");
+                var cmdString = cmdKeys.join("<br>");
                 annyang.addCommands(cmd);
                 $("#cmdTarget").append("<p>" + cmdString + "</p>");
             });
@@ -438,7 +438,7 @@
                     }
                 };
                 var cmdKeys = Object.keys(cmd);
-                var cmdString = cmdKeys.join(" | ");
+                var cmdString = cmdKeys.join("<br>");
                 annyang.addCommands(cmd);
                 $("#cmdTarget").append("<p>" + cmdString + "</p>");
             });
@@ -582,10 +582,10 @@
         }
 
         /**
-         * Build beta select function.
-         * Selecting marks by matching with string similarity (provided by fuse.js) of input command.
+         * Build beta fuzzy functions
+         * Functions matching input command to data by using string similarity (provided by fuse.js).
          */
-        function buildFuzzySelect() {
+        function buildFuzzyCmds() {
             var data, columns;
             var columnprops = [];
             var columnnames = [];
@@ -607,15 +607,16 @@
                     columnnames.push(item.getFieldName());
                 });
                 var cmds = {
-                    'test *multiple words': function() { alert('Multiple!'); },
-                    'fuzzy select *mark of column *column': fuzzySelect
+                    /*'test *multiple words': function() { alert('Multiple!'); },*/
+                    'select *mark from column *column': fuzzySelect,
+                    'display data for country *country': displayCountryData
                 };
                 var cmdKeys = Object.keys(cmds);
-                var cmdString = cmdKeys.join(" | ");
+                var cmdString = cmdKeys.join("<br>");
                 annyang.addCommands(cmds);
                 $("#cmdTarget").append("<h2 id='available'>Beta Command String Similarity:</h2>" +
                     "<p>Suitable for Country & Region</p><p>" + cmdString + "</p>");
-            })
+            });
 
             /**
              * Actual select function executed on voice command match.
@@ -648,6 +649,52 @@
                     columnmatch,
                     markmatch,
                     tableau.FilterUpdateType.REPLACE);
+            }
+
+            /**
+             * Actual select function executed on voice command match.
+             * Selecting marks by matching with string similarity (provided by fuse.js) of input command.
+             * @param {String} country - desired mark from fetched voice input
+             */
+            function displayCountryData(country) {
+                var rowData = data.getData();
+                var countries = [];
+                var fusecolumns = new Fuse(columnnames, fuseoptions);
+                var fuzzycolumnresult = fusecolumns.search("Country");
+                var columnmatch = columnnames[fuzzycolumnresult[0]];
+                var columnindex;
+                for (let item of columnprops) {
+                    if (item.name === columnmatch) {
+                        columnindex = item.index;
+                        break;
+                    }
+                }
+                for (var i = 0; i < rowData.length; i++) {
+                    var dataelement = rowData[i];
+                    var help = dataelement[columnindex].formattedValue.toString();
+                    countries.push(help);
+                }
+                var fusecountries = new Fuse(countries, fuseoptions);
+                var fuzzycountryresult = fusecountries.search(country);
+                var countrymatch = countries[fuzzycountryresult[0]];
+                console.log(countrymatch);
+                var countryboxtitle = "Data of Country ";
+                var countrystring = "";
+                countryboxtitle = countryboxtitle.concat(countrymatch, ": ");
+                console.log(countrystring);
+                for (var i = 0; i < rowData.length; i++) {
+                    var dataelement = rowData[i];
+                    if (dataelement[columnindex].formattedValue.toString() === countrymatch) {
+                        for (var i = 0; i < dataelement.length; i++) {
+                            countrystring = countrystring.concat(columnnames[i], ": ", dataelement[i].formattedValue.toString(), "<br>");
+                        }
+                        console.log(countrystring);
+                        break;
+                    }
+                }
+                $("<div>"+countrystring+"</div>").dialog({
+                    title: countryboxtitle
+                });
             }
         }
     });
