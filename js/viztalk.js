@@ -529,10 +529,6 @@
             }
         }
 
-        function retrieveValue() {
-
-        }
-
         /**
          * Utility function.
          * Transform an annyang voice input for trying to match it to the corresponding
