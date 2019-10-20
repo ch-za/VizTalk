@@ -69,7 +69,7 @@
             var cmdKeys = Object.keys(cmds);
             var cmdString = cmdKeys.join("<br>");
             annyang.addCommands(cmds);
-            $("#cmdTarget").append("<h2 id='available'>Available commands:</h2>" +
+            $("#cmdTarget").append("<h2 class='available'>Available commands:</h2>" +
                 "<p>" + cmdString + "</p><p>Use '-1' in range filter for no min/max.<br>Use '-1' for both for clearing range filter.</p>");
         }
 
@@ -609,12 +609,12 @@
                 var cmdKeys = Object.keys(cmds);
                 var cmdString = cmdKeys.join("<br>");
                 annyang.addCommands(cmds);
-                $("#cmdTarget").append("<h2 id='available'>Beta Command String Similarity:</h2>" +
+                $("#cmdTarget").append("<h2 class='available'>Beta Command String Similarity:</h2>" +
                     "<p>Suitable for Country & Region</p><p>" + cmdString + "</p>");
             });
 
             /**
-             * Actual select function executed on voice command match.
+             * Mark selection function executed on voice command match.
              * Selecting marks by matching with string similarity (provided by fuse.js) of input command.
              * @param {String} mark - desired mark from fetched voice input
              * @param {String} column - desired column from fetched voice input
@@ -622,6 +622,7 @@
             function fuzzySelect(mark, column) {
                 var columnindex;
                 var marks = [];
+                // fuzzy-search in column array for voice input column
                 var fusecolumns = new Fuse(columnnames, fuseoptions);
                 var fuzzycolumnresult = fusecolumns.search(column);
                 var columnmatch = columnnames[fuzzycolumnresult[0]];
@@ -637,9 +638,11 @@
                     var help = dataelement[columnindex].formattedValue.toString();
                     marks.push(help);
                 }
+                // fuzzy-search for voice input mark in previous obtained column data
                 var fusemarks = new Fuse(marks, fuseoptions);
                 var fuzzymarkresult = fusemarks.search(mark);
                 var markmatch = marks[fuzzymarkresult[0]];
+                // actual select operation
                 activeSheet.selectMarksAsync(
                     columnmatch,
                     markmatch,
@@ -647,8 +650,9 @@
             }
 
             /**
-             * Actual select function executed on voice command match.
-             * Selecting marks by matching with string similarity (provided by fuse.js) of input command.
+             * Data display function executed on voice command match.
+             * Displaying data of a specific mark in a popup by matching with string similarity
+             * (provided by fuse.js) of input command.
              * @param {String} country - desired mark from fetched voice input
              */
             function displayCountryData(country) {
@@ -672,21 +676,21 @@
                 var fusecountries = new Fuse(countries, fuseoptions);
                 var fuzzycountryresult = fusecountries.search(country);
                 var countrymatch = countries[fuzzycountryresult[0]];
-                console.log(countrymatch);
                 var countryboxtitle = "Data of Country ";
                 var countrystring = "";
                 countryboxtitle = countryboxtitle.concat(countrymatch, ": ");
-                console.log(countrystring);
+                /** iterate over country data, if there's a match with the result of the fuzzy-search,
+                a string containing the country's data is built. Once it's done, the for-loop is aborted. */
                 for (var i = 0; i < rowData.length; i++) {
                     var dataelement = rowData[i];
                     if (dataelement[columnindex].formattedValue.toString() === countrymatch) {
                         for (var i = 0; i < dataelement.length; i++) {
                             countrystring = countrystring.concat(columnnames[i], ": ", dataelement[i].formattedValue.toString(), "<br>");
                         }
-                        console.log(countrystring);
                         break;
                     }
                 }
+                // display JQuery dialog popup containing country data
                 $("<div>"+countrystring+"</div>").dialog({
                     title: countryboxtitle
                 });
