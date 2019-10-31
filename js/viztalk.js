@@ -58,7 +58,7 @@
         function annyangInit() {
             var cmds = {
                 'hello': function() { alert('Hello Vizmaster!'); },
-                'activate (sheet) *name': activateSheet,
+                'activate *name': activateSheet,
                 'clear selection': clearSelection,
                 'clear filter :filter': clearFilter,
                 ':type filter by Year :year': yearFilter,
@@ -381,8 +381,8 @@
             var buildSelectAdd = "^select Region (";
             var buildSelectReplace = "^replace selection with Region (";
             var buildSelectRemove = "^remove selection of Region (";
-            var buildFilterAdd = "^filter by Region (";
-            var buildFilterReplace = "^replace filter with Region (";
+            var buildFilterReplace = "^filter by Region (";
+            var buildFilterAdd = "^add filter to Region (";
             var buildFilterRemove = "^remove filter of Region (";
             // define options for data pull
             var options = {
@@ -424,12 +424,12 @@
                         'callback': removeSelectMarkFromRegions
                     },
                     'filter by Region :region': {
-                        'regexp': regexAddFil,
-                        'callback': addRegionFilter
-                    },
-                    'replace filter with Region :region': {
                         'regexp': regexReplaceFil,
                         'callback': replaceRegionFilter
+                    },
+                    'add filter to Region :region': {
+                        'regexp': regexAddFil,
+                        'callback': addRegionFilter
                     },
                     'remove filter of Region :region': {
                         'regexp': regexRemoveFil,
@@ -604,7 +604,7 @@
                 var cmds = {
                     /*'test *multiple words': function() { alert('Multiple!'); },*/
                     'select *mark from column *column': fuzzySelect,
-                    'display data for country *country': displayCountryData
+                    'display (data for) country *country': displayCountryData
                 };
                 var cmdKeys = Object.keys(cmds);
                 var cmdString = cmdKeys.join("<br>");
